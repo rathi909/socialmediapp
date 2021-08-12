@@ -1,57 +1,35 @@
 package createpost.repository;
 
-import static constants.AppConstants.LIST_OF_POSTS;
-import static constants.AppConstants._ID;
-
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
-import com.mongodb.WriteResult;
-
+import common.DataRepository;
+import common.UserInformationBuilder;
 import entity.Post;
-import entity.UserData;
 
 /**
- * @author sunny
- *
+ * @author sunny This is repository class that will create the post and save in
+ *         the database.
  */
 @Component
 public class CreatePostRepositoryImpl implements CreatePostRepository {
 
-	
 	@Autowired
-	private MongoTemplate mongoTemplate;
+	private DataRepository dataRepository;
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public Boolean createPost(Post post, String userId) {
-		UserData userData = getUserDataById(userId);
-		Update update = new Update();
-		if (Objects.nonNull(getUserDataById(userId))) {
-			userData.getListOfPosts().add(post);
-			update.set(LIST_OF_POSTS, userData.getListOfPosts());
-			Query query = new Query(Criteria.where(_ID).is(userId));
-			final WriteResult result = mongoTemplate.upsert(query, update, UserData.class);
-			Boolean postCreated = result.getN() > 0 ? Boolean.TRUE : Boolean.FALSE;
-			return postCreated;
-
+		if (dataRepository.getMap().containsKey(userId)) {
+			dataRepository.getMap().get(userId).getListOfPosts().add(post);
+			return true;
 		} else {
-			update.set(LIST_OF_POSTS, Arrays.asList(post));
-			Query query = new Query(Criteria.where(_ID).is(userId));
-			final WriteResult result =mongoTemplate.upsert(query, update, UserData.class);
-			Boolean postCreated = result.getN() > 0 ? Boolean.TRUE : Boolean.FALSE;
-			return postCreated;
+			dataRepository.getMap().put(userId,
+					UserInformationBuilder.getInstance().listOfPosts(new ArrayList(Arrays.asList(post))).build());
+			return true;
 		}
-	}
-
-	@Override
-	public UserData getUserDataById(String id) {
-		return mongoTemplate.findById(id, UserData.class);
 	}
 }

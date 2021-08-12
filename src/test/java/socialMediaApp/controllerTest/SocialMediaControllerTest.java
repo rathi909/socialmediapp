@@ -4,14 +4,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import common.PostBuilder;
 
 /**
  * @author sunny
  *
  */
-public class SocialMediaAppControllerTest extends AbstractTest {
+public class SocialMediaControllerTest extends AbstractTest {
+
+	@Autowired
+	ObjectMapper ObjectMapper;
 
 	@Override
 	@Before
@@ -29,10 +38,15 @@ public class SocialMediaAppControllerTest extends AbstractTest {
 
 	@Test
 	public void testCreatepostUrlCorrect() throws Exception {
-		final String uri = "/createPost/shubham/0000/going to ";
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post(uri)).andReturn();
+		final String uri = "/createPost/shubham ";
+		MvcResult mvcResult = mvc
+				.perform(MockMvcRequestBuilders.post(uri).contentType(MediaType.APPLICATION_JSON)
+						.content(ObjectMapper
+								.writeValueAsString(PostBuilder.getInstance().postContent("Moved to London").build())))
+				.andReturn();
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(status, 201);
+
 	}
 
 	@Test
@@ -46,19 +60,25 @@ public class SocialMediaAppControllerTest extends AbstractTest {
 	@Test
 	public void testFollowUserUrlCorrect() throws Exception {
 		final String uri = "/followUser/Sonam/parul";
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post(uri)).andReturn();
-		int status = mvcResult.getResponse().getStatus();
-		assertEquals(status, 200);
+		try {
+			mvc.perform(MockMvcRequestBuilders.post(uri)).andReturn();
+		} catch (Exception ex) {
+			assertEquals(ex.getCause().getMessage(),
+					"Add follower can't be completed as Either userId id or follower doesn't exist in db");
+		}
 	}
 
 	@Test
 	public void testUnFollowUserUrlCorrect() throws Exception {
 		final String uri = "/UnfollowUser/Sonam/parul";
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri)).andReturn();
-		int status = mvcResult.getResponse().getStatus();
-		assertEquals(status, 200);
+		try {
+			mvc.perform(MockMvcRequestBuilders.post(uri)).andReturn();
+		} catch (Exception ex) {
+			assertEquals(ex.getCause().getMessage(),
+					"Add follower can't be completed as Either userId id or follower doesn't exist in db");
+		}
 	}
-	
+
 	@Test
 	public void testUnFollowUserNegative() throws Exception {
 		final String uri = "/Unfollow/Sonam/parul";
@@ -70,11 +90,15 @@ public class SocialMediaAppControllerTest extends AbstractTest {
 	@Test
 	public void testgetNewsFeed() throws Exception {
 		final String uri = "/getUserPosts/Sonam";
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
-		int status = mvcResult.getResponse().getStatus();
-		assertEquals(status, 200);
+		try {
+			mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+		} catch (Exception ex) {
+			assertEquals(ex.getCause().getMessage(),
+					"User id is not found in the database, so posts will be not be there");
+		}
+
 	}
-	
+
 	@Test
 	public void testgetNewsFeedUrlNotCorrect() throws Exception {
 		final String uri = "/getUserPo";

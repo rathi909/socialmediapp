@@ -2,20 +2,45 @@ package entity;
 
 import java.time.Instant;
 
-import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import lombok.Builder;
-import lombok.Data;
+import common.JsonDateSerializer;
 
-@Data
-@Builder
+/**
+ * @author sunny
+ * Entity class for the Post.
+ */
 public class Post {
 	
-	@Id
 	private String postId;
 	
 	private String postContent;
 	
+	@JsonSerialize(using = JsonDateSerializer.class)
 	private Instant dateTimeOfPost;
 	
+	public String getPostId() {
+		return postId;
+	}
+
+	public void setPostId(String postId) {
+		this.postId = postId;
+	}
+
+	public String getPostContent() {
+		return postContent;
+	}
+
+	public void setPostContent(String postContent) {
+		this.postContent = postContent;
+	}
+
+	public Instant getDateTimeOfPost() {
+		return dateTimeOfPost;
+	}
+
+	public void setDateTimeOfPost(Instant dateTimeOfPost) {
+		this.dateTimeOfPost = dateTimeOfPost;
+	}
+
 }

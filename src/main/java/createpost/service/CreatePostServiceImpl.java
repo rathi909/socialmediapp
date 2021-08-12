@@ -8,7 +8,7 @@ import entity.Post;
 
 /**
  * @author sunny
- *
+ * This is service class for createPost.
  */
 @Service
 public class CreatePostServiceImpl implements CreatePostService{

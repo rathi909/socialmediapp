@@ -1,5 +1,7 @@
 package controller;
 
+import static common.CommonUtils.getShortUuid;
+
 import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,12 +46,12 @@ public class SocialMediaController {
 	 * @param content
 	 * @return
 	 */
-	@PostMapping(value = "/createPost/{userId:.+}/{postId:.+}/{content:.+}")
+	@PostMapping(value = "/createPost/{userId:.+}")
 	public ResponseEntity<HttpStatus> createPost(@PathVariable("userId") final String userId,
-			@PathVariable final String postId, @PathVariable final String content) {
-
-		if (!createPostService.createPost(
-				Post.builder().postId(postId).postContent(content).dateTimeOfPost(Instant.now()).build(), userId)) {
+			@RequestBody final Post post) {
+		post.setDateTimeOfPost(Instant.now());
+		post.setPostId(getShortUuid());
+		if (!createPostService.createPost(post, userId)) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(HttpStatus.CREATED);

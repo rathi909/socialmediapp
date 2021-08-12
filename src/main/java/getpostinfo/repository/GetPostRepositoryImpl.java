@@ -6,45 +6,48 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
+import common.DataRepository;
 import entity.Post;
-import entity.UserData;
-import lombok.extern.slf4j.Slf4j;
 
+/**
+ * @author sunny
+ * This Class is used to get post for Used id;
+ */
 @Repository
-@Slf4j
 public class GetPostRepositoryImpl implements GetPostRepository {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(GetPostRepositoryImpl.class);
 
 	@Autowired
-	private MongoTemplate mongoTemplate;
+	private DataRepository dataRepository;
 
+	
 	@Override
-	public List<String> getPost(String userId) throws Exception {
+	public List<Post> getPost(String userId) throws Exception {
 		List<Post> postList = new ArrayList<>();
-		UserData userData = mongoTemplate.findById(userId, UserData.class);
-		if (userData == null) {
-			log.debug("User id not found {}",userId);
-			throw new Exception("User id is not found in the database, so posts will be not be there");
-		} else {
-			if (!userData.getListOfPosts().isEmpty()) {
-				postList.addAll(userData.getListOfPosts());
+		if (dataRepository.getMap().keySet().contains(userId)) {
+			if (Objects.nonNull(dataRepository.getMap().get(userId).getListOfPosts())) {
+				postList.addAll(dataRepository.getMap().get(userId).getListOfPosts());
 			}
-			userData.getFollowerList().forEach(follower -> {
-				UserData followerUserDta = mongoTemplate.findById(follower, UserData.class);
-				if (Objects.nonNull(followerUserDta)) {
-					List<Post> emptyList = followerUserDta.getListOfPosts();
-					if (!emptyList.isEmpty()) {
-						postList.addAll(emptyList);
+			dataRepository.getMap().keySet().forEach(x -> {
+				if (dataRepository.getMap().get(x).getFollowerList().contains(userId)) {
+					if (Objects.nonNull(dataRepository.getMap().get(x).getListOfPosts())) {
+						postList.addAll(dataRepository.getMap().get(x).getListOfPosts());
 					}
 				}
 			});
-
 			Collections.sort(postList, (l1, l2) -> l2.getDateTimeOfPost().compareTo(l1.getDateTimeOfPost()));
+			return postList.stream().limit(20).collect(Collectors.toList());
 		}
-		return postList.stream().map(Post::getPostId).limit(20).collect(Collectors.toList());
+		else {
+			LOGGER.debug("User id not found {}", userId);
+			throw new Exception("User id is not found in the database, so posts will be not be there");
+		}
 	}
 
 }

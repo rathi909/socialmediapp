@@ -5,6 +5,10 @@ import org.springframework.stereotype.Service;
 
 import followUnfollow.repository.FollowUnfollowRepository;
 
+/**
+ * @author sunny
+ * This is service class for Follow Unfollow service.
+ */
 @Service
 public class FollowUnfollowServiceImpl implements FollowUnfollowService {
 
@@ -12,13 +16,13 @@ public class FollowUnfollowServiceImpl implements FollowUnfollowService {
 	private FollowUnfollowRepository followRepository;
 
 	@Override
-	public Boolean followUserById(String UserId, String followerId) throws Exception {
-		return followRepository.addFollowe(UserId, followerId);
+	public Boolean followUserById(String userId, String followerId) throws Exception {
+		return followRepository.addFollowe(userId, followerId);
 	}
-
+	
 	@Override
-	public Boolean UnfollowUser(String UserId, String followerId) throws Exception {
-		return followRepository.removeFollowe(UserId, followerId);
+	public Boolean UnfollowUser(String userId, String followerId) throws Exception {
+		return followRepository.removeFollowe(userId, followerId);
 	}
 
 }
